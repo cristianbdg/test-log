@@ -18,7 +18,6 @@ use syn::ItemFn;
 use syn::Lit;
 use syn::Meta;
 
-
 // Documented in `test-log` crate's re-export.
 #[allow(missing_docs)]
 #[proc_macro_attribute]
@@ -133,7 +132,6 @@ fn try_test(attr: TokenStream, input: ItemFn) -> syn::Result<Tokens> {
   Ok(result)
 }
 
-
 #[derive(Debug, Default)]
 struct AttributeArgs {
   default_log_filter: Option<Cow<'static, str>>,
@@ -142,7 +140,7 @@ struct AttributeArgs {
 impl AttributeArgs {
   fn try_parse_attr_single(&mut self, attr: &Attribute) -> syn::Result<bool> {
     if !attr.path().is_ident("test_log") {
-      return Ok(false)
+      return Ok(false);
     }
 
     let nested_meta = attr.parse_args_with(Meta::parse)?;
@@ -152,7 +150,7 @@ impl AttributeArgs {
       return Err(syn::Error::new_spanned(
         &nested_meta,
         "Expected NameValue syntax, e.g. 'default_log_filter = \"debug\"'.",
-      ))
+      ));
     };
 
     let ident = if let Some(ident) = name_value.path.get_ident() {
@@ -161,7 +159,7 @@ impl AttributeArgs {
       return Err(syn::Error::new_spanned(
         &name_value.path,
         "Expected NameValue syntax, e.g. 'default_log_filter = \"debug\"'.",
-      ))
+      ));
     };
 
     let arg_ref = if ident == "default_log_filter" {
@@ -170,7 +168,7 @@ impl AttributeArgs {
       return Err(syn::Error::new_spanned(
         &name_value.path,
         "Unrecognized attribute, see documentation for details.",
-      ))
+      ));
     };
 
     if let Expr::Lit(lit) = &name_value.value {
@@ -185,13 +183,12 @@ impl AttributeArgs {
       return Err(syn::Error::new_spanned(
         &name_value.value,
         "Failed to parse value, expected a string",
-      ))
+      ));
     }
 
     Ok(true)
   }
 }
-
 
 /// Expand the initialization code for the `log` crate.
 #[cfg(all(feature = "log", not(feature = "trace")))]
@@ -208,6 +205,10 @@ fn expand_logging_init(attribute_args: &AttributeArgs) -> Tokens {
           ::test_log::env_logger::Env::default()
             .default_filter_or(#default_filter)
         )
+        .format_level(false)
+        .format_target(false)
+        .format_module_path(false)
+        .format_timestamp(None)
         .is_test(true)
         .try_init();
     }
