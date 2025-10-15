@@ -205,10 +205,10 @@ fn expand_logging_init(attribute_args: &AttributeArgs) -> Tokens {
           ::test_log::env_logger::Env::default()
             .default_filter_or(#default_filter)
         )
-        .format_level(false)
-        .format_target(false)
-        .format_module_path(false)
-        .format_timestamp(None)
+        .format(|buf, record| {
+              use ::std::io::Write;
+              writeln!(buf, "{} \x1b[90m[{}:{}]\x1b[0m", record.args(), record.file().unwrap_or_default(), record.line().map(|l| l.to_string()).unwrap_or_default())
+        })
         .is_test(true)
         .try_init();
     }
